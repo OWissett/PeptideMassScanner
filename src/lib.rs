@@ -28,6 +28,35 @@ use std::collections::HashMap;
 // Cargo Package Imports
 use clap::Parser;
 
+#[macro_use]
+extern crate lazy_static;
+
+// Only need a single copy of the amino acid hash map
+lazy_static! {
+    static  ref AMINO_ACIDS: HashMap<char, f64> = HashMap::from([
+        ('A',89.094),
+        ('R',174.203),
+        ('N',132.119),
+        ('D',133.104),
+        ('C',121.154),
+        ('Q',146.146),
+        ('E',147.131),
+        ('G',75.067),
+        ('H',155.156),
+        ('I',131.175),
+        ('L',131.175),
+        ('K',146.189),
+        ('M',149.208),
+        ('F',165.192),
+        ('P',115.132),
+        ('S',105.093),
+        ('T',119.119),
+        ('W',204.228),
+        ('Y',181.191),
+        ('V',117.148),
+    ]);
+}
+
 // Config struct to store CLI arguments
 #[derive(Parser)]
 #[clap(author="Oliver Wissett", version, about="A tool to search for peptide masses within a protein sequence written in Rust.")]
@@ -51,6 +80,18 @@ impl Config {
 pub fn run(config: Config) {
     // run the scanner...
 
+    let 
+}
+
+fn is_valid_sequence(seq: &str) -> bool {
+
+    if seq.len() == 0 { return false };
+    
+    for (_, aa) in seq.chars().enumerate() {
+        if !AMINO_ACIDS.contains_key(&aa) { return false };
+    }
+
+    return true;
 }
 
 fn is_within_tolerance(pep_mass: f64, target_mass: f64, tolerance: f64) -> bool {
@@ -59,34 +100,12 @@ fn is_within_tolerance(pep_mass: f64, target_mass: f64, tolerance: f64) -> bool 
     false
 }
 
-fn calculate_mass(pep_str: &str) -> f64 {
-    let amino_acids = HashMap::from([
-        ('A',89.094),
-        ('R',174.203),
-        ('N',132.119),
-        ('D',133.104),
-        ('C',121.154),
-        ('Q',146.146),
-        ('E',147.131),
-        ('G',75.067),
-        ('H',155.156),
-        ('I',131.175),
-        ('L',131.175),
-        ('K',146.189),
-        ('M',149.208),
-        ('F',165.192),
-        ('P',115.132),
-        ('S',105.093),
-        ('T',119.119),
-        ('W',204.228),
-        ('Y',181.191),
-        ('V',117.148),
-    ]);
+fn calculate_mass(pep_str: &str) -> f64 { 
     
     let mut total_mass: f64 = 0.0;
 
     for(_, aa) in pep_str.chars().enumerate() {
-        total_mass += amino_acids[&aa] - 18.01528; // correct for condensation reaction mass loss
+        total_mass += AMINO_ACIDS[&aa] - 18.01528; // correct for condensation reaction mass loss
     }
 
     total_mass = total_mass + 18.01528; // N-terminal (+1.01 for extra proton [H+]) and C-terminal correction (+15.99 for extra oxygen)
@@ -123,6 +142,18 @@ mod tests {
                 69293.41,
                 0.1)
             );
+    }
+
+    #[test]
+    fn valid_sequence() {
+        assert!(is_valid_sequence("ADFGQERT"));
+    }
+
+    #[test]
+    fn not_valid_sequence() {
+        assert!(!is_valid_sequence("1231"));
+        assert!(!is_valid_sequence(""));
+        assert!(!is_valid_sequence("    "));
     }
 
 }
