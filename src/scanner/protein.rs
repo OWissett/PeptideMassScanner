@@ -28,19 +28,25 @@ lazy_static! {
 
 #[derive(Debug)]
 pub struct Protein {
-    primary_seq: String,
+    pub primary_seq: String,
+    pub length: usize,
+    pub mass: f64,
 }
 
 impl Protein {
     pub fn new(primary_seq: &str) -> Result<Protein, &'static str> {
         if !Protein::is_valid_sequence(&primary_seq) {
-            return Err("");
+            return Err("Invalid protein sequence!");
         }
         Ok(Protein {
             primary_seq: String::from_str(primary_seq).unwrap(),
+            length: primary_seq.chars().count(),
+            mass: Protein::calculate_mass(primary_seq),
         })
     }
 
+
+    // Static Methods
     fn is_valid_sequence(seq: &str) -> bool {
         if seq.len() == 0 {
             return false;
@@ -54,4 +60,19 @@ impl Protein {
 
         true
     }
+
+    pub fn calculate_mass(pep_str: &str) -> f64 {
+        let mut total_mass: f64 = 0.0;
+    
+        for (_, aa) in pep_str.chars().enumerate() {
+            total_mass += AMINO_ACIDS[&aa] - 18.01528; // correct for condensation reaction mass loss
+        }
+    
+        total_mass = total_mass + 18.01528; // N-terminal (+1.01 for extra proton [H+]) and C-terminal correction (+15.99 for extra oxygen)
+    
+        print!("{}\n", total_mass);
+    
+        total_mass
+    }
+
 }

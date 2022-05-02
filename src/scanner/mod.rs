@@ -4,7 +4,11 @@ mod config;
 pub use config::{Parser, Config};
 use protein::*;
 
-use std::{error::Error, fs::read_to_string};
+use std::{
+    error::Error, 
+    fs::read_to_string,
+    collections::HashMap,
+};
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     // run the scanner...
@@ -15,9 +19,29 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let protein = Protein::new(&sequence_input)?;
 
+    // No need to search if the target mass is greater than 
+    if protein.mass + config.mass_tolerance > config.target_mass { 
+        println!("Search mass exceeds the total mass of protein. No match possible.");
+        return Ok(());
+    }
+
     // TODO: implement protein scanning
+    let mut positive_hits = HashMap::new();
+    
+    // dummy code to be removed, here to make compiler happy... (for now)
+    positive_hits.insert("k", 1.0);
+
+    for window_size in config.min_window_length..protein.length {
+        
+    }
 
     Ok(())
+}
+
+fn determine_min_window_size(mass: f64) -> usize {
+    // TODO: implement...
+
+    return 1;
 }
 
 fn is_within_tolerance(pep_mass: f64, target_mass: f64, tolerance: f64) -> bool {
@@ -25,20 +49,6 @@ fn is_within_tolerance(pep_mass: f64, target_mass: f64, tolerance: f64) -> bool 
         return true;
     };
     false
-}
-
-fn calculate_mass(pep_str: &str) -> f64 {
-    let mut total_mass: f64 = 0.0;
-
-    for (_, aa) in pep_str.chars().enumerate() {
-        total_mass += AMINO_ACIDS[&aa] - 18.01528; // correct for condensation reaction mass loss
-    }
-
-    total_mass = total_mass + 18.01528; // N-terminal (+1.01 for extra proton [H+]) and C-terminal correction (+15.99 for extra oxygen)
-
-    print!("{}\n", total_mass);
-
-    total_mass
 }
 
 #[cfg(test)]
