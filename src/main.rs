@@ -22,12 +22,21 @@
 /// SOFTWARE.
 ///
 
-use clap::Parser;
+mod scanner;
+use crate::scanner::*;
+
+use std::process;
+
+#[macro_use]
+extern crate lazy_static;
 
 fn main() {
-    // Parse the CLI arguments
-    let args = mass_scanner::Config::parse();
+    // Parse the CLI arguments using clap
+    let config = Config::parse();
 
     // Run the mass scanner
-    mass_scanner::run(args);
+    if let Err(e) = run(config) {
+        eprintln!("\x1b[93mApplication error: {}\x1b[0m", e);
+        process::exit(1);
+    }
 }
