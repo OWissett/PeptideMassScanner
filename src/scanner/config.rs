@@ -1,3 +1,8 @@
+// Copyright (c) 2022 Oliver Wissett
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 pub use clap::Parser;
 
 // Config struct to store CLI arguments
@@ -22,9 +27,4 @@ pub struct Config {
     )]
     pub seq_path: std::path::PathBuf,
 
-    #[clap(
-        short = 'w',
-        default_value = "1"
-    )]
-    pub min_window_length: usize,
 }

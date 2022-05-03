@@ -1,3 +1,8 @@
+// Copyright (c) 2022 Oliver Wissett
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 // Cargo Package Imports
 use std::{collections::HashMap, str::FromStr};
 
@@ -45,7 +50,6 @@ impl Protein {
         })
     }
 
-
     // Static Methods
     fn is_valid_sequence(seq: &str) -> bool {
         if seq.len() == 0 {
@@ -63,16 +67,22 @@ impl Protein {
 
     pub fn calculate_mass(pep_str: &str) -> f64 {
         let mut total_mass: f64 = 0.0;
-    
+
         for (_, aa) in pep_str.chars().enumerate() {
             total_mass += AMINO_ACIDS[&aa] - 18.01528; // correct for condensation reaction mass loss
         }
-    
-        total_mass = total_mass + 18.01528; // N-terminal (+1.01 for extra proton [H+]) and C-terminal correction (+15.99 for extra oxygen)
-    
-        print!("{}\n", total_mass);
-    
-        total_mass
-    }
 
+        total_mass = total_mass + 18.01528; // N-terminal (+1.01 for extra proton [H+]) and C-terminal correction (+15.99 for extra oxygen)
+
+        if cfg!(debug_assertion) {
+            print!("Peptide total mass: {}\n", total_mass);
+        }
+
+        total_mass
+
+        // Optimisation - exit early if mass is above the target mass... (potentially save lots of time)
+    }
 }
+
+
+// TODO: Add Display trait to protein
