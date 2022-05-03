@@ -20,6 +20,7 @@ struct Scanner {
     target_mass: f64,           // Target mass of fragment
     mass_tolerance: f64,        // The amount of wiggle room around the mass that is acceptable
     positive_hits: Box<SeqMap>, // Stores all of the possible peptides fragments sequences (as keys), and a tuple of mass and number of occurrences
+    save_frag_mat: bool,
 }
 
 impl Scanner {
@@ -28,6 +29,7 @@ impl Scanner {
         protein: Protein,
         target_mass: f64,
         mass_tolerance: f64,
+        save_frag_mat: bool,
     ) -> Result<Scanner, Box<dyn Error>> {
         // No need to search if the target mass is greater than total mass
         if target_mass - mass_tolerance > protein.mass {
@@ -49,6 +51,7 @@ impl Scanner {
             target_mass,
             mass_tolerance,
             positive_hits: Box::new(SeqMap::new()),
+            save_frag_mat,
         };
 
         return Ok(scanner);
@@ -66,14 +69,9 @@ impl Scanner {
             self.mass_tolerance
         );
 
-        println!("Fragment Matrix:");
 
-        // TODO: Add switch in config for displaying frag matrix
-        
-        for row in frag_mat {
-            println!("{:?}", &row);
-        }
-
+        // TODO: Add saving frag_mat
+ 
         
         println!("Hits: {:?}", self.positive_hits.keys());
 
@@ -150,6 +148,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         Protein::new(&sequence_input)?,
         config.target_mass,
         config.mass_tolerance,
+        config.save_frag_mat,
     )?;
 
     scanner.scan();
@@ -162,9 +161,6 @@ mod tests {
 
     use super::{Scanner, Protein};
 
-
-
-
     #[test]
     fn mock_up()  {
         let sequence_input = "GAKAATGY";
@@ -175,6 +171,7 @@ mod tests {
             Protein::new(&sequence_input).unwrap(),
             target_mass,
             mass_tolerance,
+            false
         );
         
         match scanner {
