@@ -15,13 +15,15 @@ pub struct AppError {
 
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Application Error: {}", self.msg)
+        write!(f, "{}", self.msg)
     }
 }
 
 impl fmt::Debug for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("AppError").finish()
+        f.debug_struct("AppError")
+            .field("Message",&self.msg)
+            .finish()
     }
 }
 

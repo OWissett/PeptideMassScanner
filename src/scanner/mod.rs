@@ -5,22 +5,25 @@
 
 mod app_error;
 mod config;
+mod io;
 mod protein;
+mod types;
 
 use app_error::AppError;
+use io::*; // TODO Integrate file readers with the run function...
 use protein::*;
+use types::*;
+
 pub use config::{Config, Parser};
 
-use std::{collections::HashMap, error::Error, fs::read_to_string};
-
-type SeqMap = HashMap<String, (f64, i32)>; // HashMap<Protein Sequence, (fragment mass, number of occurrences)>
+use std::{error::Error, fs::read_to_string};
 
 struct Scanner {
     protein: Protein,           // The protein to be scanned
     target_mass: f64,           // Target mass of fragment
     mass_tolerance: f64,        // The amount of wiggle room around the mass that is acceptable
     positive_hits: Box<SeqMap>, // Stores all of the possible peptides fragments sequences (as keys), and a tuple of mass and number of occurrences
-    save_frag_mat: bool,
+    save_frag_mat: bool,        //
 }
 
 impl Scanner {
@@ -61,18 +64,14 @@ impl Scanner {
 
     pub fn scan(&mut self) -> Vec<(&String, &(f64, i32))> {
         let frag_mat = self.calculate_frags_and_search();
-        
+
         println!(
             "Input Sequence:\n{}\n\nTarget mass: {}\nMass tolerance: {}",
-            self.protein.primary_seq,
-            self.target_mass,
-            self.mass_tolerance
+            self.protein.primary_seq, self.target_mass, self.mass_tolerance
         );
 
-
         // TODO: Add saving frag_mat
- 
-        
+
         println!("Hits: {:?}", self.positive_hits.keys());
 
         let hits = Vec::from_iter(self.positive_hits.iter());
@@ -81,7 +80,7 @@ impl Scanner {
     }
 
     // This function may be modified to be run in parallel - each row can be computed independently
-    fn calculate_frags_and_search(&mut self) -> Vec<Vec<f64>> {
+    fn calculate_frags_and_search(&mut self) -> Matrix2D {
         // Time complexity of matrix calculation: O(n^2/2 + n)
 
         let n = self.protein.primary_seq.len();
@@ -90,9 +89,7 @@ impl Scanner {
 
         for row in 0..n {
             for fragment in row..n {
-
                 if row == fragment {
-
                     f[row][fragment] += AMINO_ACIDS[&(seq_bytes[fragment] as char)];
 
                     if self.in_tolerance(f[row][fragment]) {
@@ -109,10 +106,8 @@ impl Scanner {
                     continue;
                 }
 
-
                 f[row][fragment] =
                     f[row][fragment - 1] + AMINO_ACIDS[&(seq_bytes[fragment] as char)] - 18.01528;
-
 
                 if self.in_tolerance(f[row][fragment]) {
                     let frag_seq = self.protein.primary_seq[row..fragment + 1].to_string();
@@ -125,7 +120,6 @@ impl Scanner {
                         }
                     }
                 };
-
             }
         }
         return f;
@@ -145,7 +139,10 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     };
 
     let mut scanner = Scanner::new(
-        Protein::new(&sequence_input)?,
+        Protein::new(
+            "PLACEHOLDER", // HACK Change this later... once finished file readers
+            &sequence_input,
+        )?,
         config.target_mass,
         config.mass_tolerance,
         config.save_frag_mat,
@@ -159,33 +156,31 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
 
-    use super::{Scanner, Protein};
+    use super::{Protein, Scanner};
 
     #[test]
-    fn mock_up()  {
+    fn mock_up() {
         let sequence_input = "GAKAATGY";
         let target_mass = 274.304;
         let mass_tolerance = 1.0;
 
         let scanner = Scanner::new(
-            Protein::new(&sequence_input).unwrap(),
+            Protein::new("GAK_sequence", &sequence_input).unwrap(),
             target_mass,
             mass_tolerance,
-            false
+            false,
         );
-        
+
         match scanner {
             Ok(mut scanner) => {
                 let res = scanner.scan();
                 println!("{:?}", res);
                 assert_eq!(res[0].0, "GAK")
-            },
-            Err(e) => { 
+            }
+            Err(e) => {
                 eprintln!("{}", e);
                 panic!();
-            },
+            }
         }
-        
     }
-    
 }

@@ -4,8 +4,8 @@
 // https://opensource.org/licenses/MIT
 
 mod scanner;
-use crate::scanner::*;
 
+use crate::scanner::*;
 use std::process;
 
 #[macro_use]
@@ -17,7 +17,7 @@ fn main() {
 
     // Run the mass scanner
     if let Err(e) = run(config) {
-        eprintln!("\x1b[93m{}\x1b[0m", e);
+        eprintln!("\x1b[93mApplication Error: {}\x1b[0m", e);
         process::exit(1);
     }
 }
