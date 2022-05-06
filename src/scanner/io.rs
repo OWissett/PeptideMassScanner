@@ -3,13 +3,17 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-use super::types::{Matrix2D, SeqMap};
-use super::Protein;
+use super::{
+    types::{Matrix2D, SeqMap}, 
+    protein::Protein, 
+    app_error::AppError
+};
 
 use bio::io::fasta::Reader as FastaReader;
+use csv::Reader as CsvReader;
+
 use std::error::Error;
 
-use super::app_error::AppError;
 
 #[derive(Debug)]
 pub enum OutFileFormat {
@@ -23,16 +27,32 @@ pub mod writers {
     pub fn write_matrix(data: Matrix2D, file_format: OutFileFormat) -> Result<(), Box<dyn Error>> {
         // TODO Implement fragment_matrix writer.
 
-        // Allow saving as json or CSV
-
-        todo!();
+        match file_format {
+            OutFileFormat::JSON => {
+                todo!()
+            },
+            OutFileFormat::CSV => {
+                todo!()
+            },
+        }
     }
 
     pub fn write_seq_map(data: SeqMap, file_format: OutFileFormat) -> Result<(), Box<dyn Error>> {
         // TODO Implement seq_map writer
-
-        todo!();
+        match file_format {
+            OutFileFormat::JSON => {
+                todo!()
+            },
+            OutFileFormat::CSV => {
+                todo!()
+            }
+        }
     }
+
+    fn write_csv(data: &str) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
+
 }
 
 pub mod readers {
@@ -44,11 +64,11 @@ pub mod readers {
         // Check the file extension and call the appropriate function, then return protein vector
         
         if let Some(_) = str::strip_suffix(seq_path, ".fasta") {
-            return read_fasta(seq_path)
+            return read_fasta(seq_path);
         }
 
         if let Some(_) = str::strip_suffix(seq_path, ".csv") {
-            return read_csv(seq_path)
+            return read_csv(seq_path);
         }
         
         Err(Box::new(AppError { 
@@ -72,6 +92,7 @@ pub mod readers {
     }
 
     fn read_csv(csv_path: &str) -> Result<Vec<Protein>, Box<dyn Error>> {
+        // TODO implement csv reader
         todo!();
     }
 
